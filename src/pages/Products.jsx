@@ -1,11 +1,45 @@
-﻿import React from 'react';
+import React from 'react';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
+import { SkeletonCard, ErrorMessage, EmptyState } from '../components/states';
 
 const Products = () => {
-  const { data: products, isLoading, error } = useProducts();
+  const { data: products, isLoading, error, refetch } = useProducts();
 
-  // DELIBERATE GAP: No handling for isLoading, error, or empty data list.
+  if (isLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Product Inventory</h1>
+        </div>
+        <SkeletonCard count={4} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <ErrorMessage
+          message="We couldn't load the product inventory. Check your connection and try again."
+          onRetry={refetch}
+        />
+      </div>
+    );
+  }
+
+  if (products && products.length === 0) {
+    return (
+      <div className="p-8">
+        <EmptyState
+          title="No products in inventory"
+          message="Add new products to start tracking stock, pricing, and availability."
+          actionLabel="Refresh list"
+          onAction={refetch}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -22,7 +56,7 @@ const Products = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products && products.map(product => (
+        {products.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>

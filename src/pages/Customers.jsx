@@ -1,11 +1,45 @@
-﻿import React from 'react';
+import React from 'react';
 import { useCustomers } from '../hooks/useCustomers';
 import CustomerRow from '../components/CustomerRow';
+import { SkeletonCard, ErrorMessage, EmptyState } from '../components/states';
 
 const Customers = () => {
-    const { data: customers, isLoading, error } = useCustomers();
+    const { data: customers, isLoading, error, refetch } = useCustomers();
 
-    // DELIBERATE GAP: Nothing here for loading, error, or empty data records.
+    if (isLoading) {
+      return (
+        <div className="p-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Customer Management</h1>
+          </div>
+          <SkeletonCard count={4} />
+        </div>
+      );
+    }
+  
+    if (error) {
+      return (
+        <div className="p-8">
+          <ErrorMessage
+            message="We couldn't load the customer list. Check your connection and try again."
+            onRetry={refetch}
+          />
+        </div>
+      );
+    }
+  
+    if (customers && customers.length === 0) {
+      return (
+        <div className="p-8">
+          <EmptyState
+            title="No customers found"
+            message="Customer accounts will appear here when they place an order."
+            actionLabel="Refresh customers"
+            onAction={refetch}
+          />
+        </div>
+      );
+    }
 
     return (
         <div className="p-8">
@@ -21,7 +55,7 @@ const Customers = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
-                        {customers && customers.map(customer => (
+                        {customers.map(customer => (
                             <CustomerRow key={customer.id} customer={customer} />
                         ))}
                     </tbody>
